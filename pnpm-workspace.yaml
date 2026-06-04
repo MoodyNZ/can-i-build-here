@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Dependency build scripts. pnpm v10 blocks postinstall scripts by default;
+# list packages whose build scripts we intentionally allow / ignore here.
+onlyBuiltDependencies:
+  - esbuild
+
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
