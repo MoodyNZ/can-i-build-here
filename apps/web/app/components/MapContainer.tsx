@@ -14,10 +14,24 @@ const INITIAL_ZOOM = 16.5;
 
 const EMPTY_GEOJSON: FeatureCollection = { type: "FeatureCollection", features: [] };
 
+const OSM_ATTRIBUTION =
+  '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
 const MAP_STYLE: StyleSpecification = {
   version: 8,
-  sources: {},
-  layers: [{ id: "background", type: "background", paint: { "background-color": "#eceae4" } }],
+  sources: {
+    osm: {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: OSM_ATTRIBUTION,
+    },
+  },
+  layers: [
+    { id: "background", type: "background", paint: { "background-color": "#eceae4" } },
+    { id: "osm", type: "raster", source: "osm" },
+  ],
 };
 
 export type ParcelSelection = {
@@ -50,8 +64,6 @@ export function MapContainer({
     if (!container) return;
 
     let active = true;
-    // Pristine parcel geometry keyed by id. MapLibre simplifies and tile-clips the
-    // geometry it hands back on click, so envelope maths must run on the originals.
     const byId: Record<string, Feature<ParcelGeometry>> = {};
 
     const map = new maplibregl.Map({
@@ -59,7 +71,7 @@ export function MapContainer({
       style: MAP_STYLE,
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
-      attributionControl: false,
+      attributionControl: { compact: true },
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
@@ -150,5 +162,6 @@ export function MapContainer({
     };
   }, []);
 
+  // Add styles to ensure map has an absolute height to scale to, or it will render as 0x0
   return <div ref={containerRef} className="h-full w-full" />;
 }
