@@ -5,6 +5,7 @@ import maplibregl, { type StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef } from "react";
 import { assetUrl } from "@/lib/basePath";
+import { makeDummyParcel } from "./dummyParcel";
 
 // TODO: replace these mocks with the real methods
 type ParcelGeometry = Polygon | MultiPolygon;
@@ -98,12 +99,6 @@ export function MapContainer({
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
-    const clearSelection = () => {
-      map.setFilter("parcels-selected", ["==", ["get", "id"], ""]);
-      (map.getSource("envelope") as maplibregl.GeoJSONSource).setData(EMPTY_GEOJSON);
-      onSelectRef.current?.(null);
-    };
-
     map.on("load", async () => {
       const collection = (await fetch(STATIC_PARCELS_DATA).then((r) =>
         r.json(),
@@ -164,11 +159,15 @@ export function MapContainer({
         });
       });
 
-      // Clicking empty background clears the selection.
       map.on("click", (e) => {
-        if (map.queryRenderedFeatures(e.point, { layers: ["parcels-fill"] }).length === 0) {
-          clearSelection();
-        }
+        if (map.queryRenderedFeatures(e.point, { layers: ["parcels-fill"] }).length > 0) return;
+
+        const dummy = makeDummyParcel(e.lngLat);
+        map.setFilter("parcels-selected", ["==", ["get", "id"], ""]);
+        (map.getSource("envelope") as maplibregl.GeoJSONSource).setData(
+          dummy.result.envelope ?? EMPTY_GEOJSON,
+        );
+        onSelectRef.current?.(dummy);
       });
 
       map.on("mouseenter", "parcels-fill", () => {
