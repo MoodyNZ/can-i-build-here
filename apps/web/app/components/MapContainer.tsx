@@ -1,11 +1,34 @@
 "use client";
 
-import type { Feature, FeatureCollection } from "geojson";
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import maplibregl, { type StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef } from "react";
 import { assetUrl } from "@/lib/basePath";
-import { computeBuildableEnvelope, type EnvelopeResult, type ParcelGeometry } from "@/lib/geometry";
+
+// TODO: replace these mocks with the real methods
+type ParcelGeometry = Polygon | MultiPolygon;
+
+type EnvelopeResult = {
+  siteAreaM2: number;
+  buildableAreaM2: number;
+  coveragePercent: number;
+  envelope: Feature<ParcelGeometry> | null;
+  isSetbackBinding: boolean;
+  isEmpty: boolean;
+};
+
+/** No-op stub: returns an empty envelope until the real logic is wired back in. */
+function computeBuildableEnvelope(_parcel: Feature<ParcelGeometry>): EnvelopeResult {
+  return {
+    siteAreaM2: 0,
+    buildableAreaM2: 0,
+    coveragePercent: 0,
+    envelope: null,
+    isSetbackBinding: false,
+    isEmpty: true,
+  };
+}
 
 const STATIC_PARCELS_DATA = assetUrl("/data/parcels.geojson");
 
