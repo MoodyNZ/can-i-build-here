@@ -1,6 +1,6 @@
 import { MAX_COVERAGE_PERCENT, numberFormat } from "@/lib/config";
+import type { ParcelSelection } from "@/lib/envelope";
 import { SETBACK_METRES } from "@/lib/geometry";
-import type { ParcelSelection } from "./MapContainer";
 
 const EMPTY_PROMPT = "Click a parcel to see what you could build on it.";
 const FALLBACK_ADDRESS = "Selected parcel";
@@ -39,12 +39,12 @@ export function StatsPanel({ selection }: { selection: ParcelSelection | null })
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{TOO_SMALL}</p>
       ) : (
         <dl className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
-          <Row label={LABEL_SITE_AREA} value={`${numberFormat.format(result.siteAreaM2)} m²`} />
+          <Row label={LABEL_SITE_AREA} value={`${numberFormat.format(result.siteArea)} m²`} />
           <Row
             label={LABEL_BUILDABLE_AREA}
-            value={`${numberFormat.format(result.buildableAreaM2)} m²`}
+            value={`${numberFormat.format(result.buildableArea)} m²`}
           />
-          <Row label={LABEL_COVERAGE} value={`${result.coveragePercent}%`} />
+          <Row label={LABEL_COVERAGE} value={`${result.coverageRatio}%`} />
           <Row
             label={LABEL_LIMITED_BY}
             value={result.isSetbackBinding ? SETBACK_BINDING : COVERAGE_BINDING}
