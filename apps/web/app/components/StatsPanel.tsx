@@ -1,8 +1,16 @@
-import { MAX_COVERAGE_RATIO, SETBACK_METRES } from "@/lib/geometry";
+import { MAX_COVERAGE_PERCENT, numberFormat } from "@/lib/config";
+import { SETBACK_METRES } from "@/lib/geometry";
 import type { ParcelSelection } from "./MapContainer";
 
-const numberFormat = new Intl.NumberFormat("en-NZ");
-const MAX_COVERAGE_PERCENT = Math.round(MAX_COVERAGE_RATIO * 100);
+const EMPTY_PROMPT = "Click a parcel to see what you could build on it.";
+const FALLBACK_ADDRESS = "Selected parcel";
+const TOO_SMALL = `Too small to build on — nothing remains after the ${SETBACK_METRES}m setback.`;
+const LABEL_SITE_AREA = "Site area";
+const LABEL_BUILDABLE_AREA = "Buildable area";
+const LABEL_COVERAGE = "Coverage";
+const LABEL_LIMITED_BY = "Limited by";
+const SETBACK_BINDING = `${SETBACK_METRES}m setback`;
+const COVERAGE_BINDING = `${MAX_COVERAGE_PERCENT}% coverage cap`;
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -17,7 +25,7 @@ export function StatsPanel({ selection }: { selection: ParcelSelection | null })
   if (!selection) {
     return (
       <div className="pointer-events-auto rounded-lg border border-zinc-200 bg-white/90 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-400">
-        Click a parcel to see what you could build on it.
+        {EMPTY_PROMPT}
       </div>
     );
   }
@@ -26,23 +34,20 @@ export function StatsPanel({ selection }: { selection: ParcelSelection | null })
 
   return (
     <div className="pointer-events-auto rounded-lg border border-zinc-200 bg-white/90 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/90">
-      <h2 className="font-semibold text-base tracking-tight">{address ?? "Selected parcel"}</h2>
+      <h2 className="font-semibold text-base tracking-tight">{address ?? FALLBACK_ADDRESS}</h2>
       {result.isEmpty ? (
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Too small to build on — nothing remains after the {SETBACK_METRES}m setback.
-        </p>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{TOO_SMALL}</p>
       ) : (
         <dl className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
-          <Row label="Site area" value={`${numberFormat.format(result.siteAreaM2)} m²`} />
-          <Row label="Buildable area" value={`${numberFormat.format(result.buildableAreaM2)} m²`} />
-          <Row label="Coverage" value={`${result.coveragePercent}%`} />
+          <Row label={LABEL_SITE_AREA} value={`${numberFormat.format(result.siteAreaM2)} m²`} />
           <Row
-            label="Limited by"
-            value={
-              result.isSetbackBinding
-                ? `${SETBACK_METRES}m setback`
-                : `${MAX_COVERAGE_PERCENT}% coverage cap`
-            }
+            label={LABEL_BUILDABLE_AREA}
+            value={`${numberFormat.format(result.buildableAreaM2)} m²`}
+          />
+          <Row label={LABEL_COVERAGE} value={`${result.coveragePercent}%`} />
+          <Row
+            label={LABEL_LIMITED_BY}
+            value={result.isSetbackBinding ? SETBACK_BINDING : COVERAGE_BINDING}
           />
         </dl>
       )}
